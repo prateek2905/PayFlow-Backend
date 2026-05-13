@@ -17,7 +17,7 @@ const signinSchema = zod.object({
   password: zod.string().min(6),
 });
 
-app.post("/signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
     const inputVerified = signupSchema.safeParse(req.body);
     if (!inputVerified.success) {
         return res.status(400).json({
@@ -56,7 +56,7 @@ app.post("/signup", async (req, res) => {
     });
 });
 
-app.post("/signin", async(req, res) => {
+router.post("/signin", async(req, res) => {
   const inputVerified = signinSchema.safeParse(req.body);
   if (!inputVerified.success) {
     return res.status(400).json({
