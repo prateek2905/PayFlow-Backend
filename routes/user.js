@@ -5,6 +5,7 @@ const { Account } = require("../db");
 const bcrypt = require("bcrypt");
 const zod = require("zod");
 const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../config");
 
 const { authMiddleware } = require("../middleware");
 
@@ -57,7 +58,7 @@ router.post("/signup", async (req, res) => {
 
     const token = jwt.sign({
         userId
-    }, process.env.JWT_SECRET);
+    }, JWT_SECRET);
 
     res.json({ 
         message: "User created successfully",
@@ -73,7 +74,7 @@ router.post("/signin", async(req, res) => {
     });
   }
 
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username: inputVerified.data.username });
   if (!user) {
     return res.status(401).send("Invalid username");
   }
@@ -84,7 +85,7 @@ router.post("/signin", async(req, res) => {
 
   const token = jwt.sign({
     userId: user._id
-  }, process.env.JWT_SECRET);
+  }, JWT_SECRET);
 
   res.json({
     message: "User logged in successfully",
@@ -106,6 +107,24 @@ router.put("/update", authMiddleware, async (req, res) => {
   await User.updateOne({ _id: req.userId }, updates);
 
   res.json({ message: "User updated successfully" });
+});
+
+router.get("/bulk", authMiddleware, async (req, res) => {
+    const filter = req.query.filter || "";
+    const users = await User.find({
+        $or: [
+            { firstName: { $regex: filter, $options: "i" } },
+            { lastName: { $regex: filter, $options: "i" } }
+        ]
+    });
+    res.json({
+        user: users.map(u => ({
+            _id: u._id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            username: u.username
+        }))
+    });
 });
 
 module.exports = router;

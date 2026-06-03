@@ -1,7 +1,8 @@
 // backend/db.js
 const mongoose = require("mongoose");
+const { MONGO_URI } = require("./config");
 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(MONGO_URI);
 
 const userSchema = new mongoose.Schema({
   username: {
