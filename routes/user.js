@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt");
 const zod = require("zod");
 const jwt = require("jsonwebtoken");
 
+const { authMiddleware } = require("../middleware");
+
 const signupSchema = zod.object({
   username: zod.string().min(3).max(30),
   password: zod.string().min(6),
@@ -15,6 +17,13 @@ const signupSchema = zod.object({
 const signinSchema = zod.object({
   username: zod.string().min(3).max(30),
   password: zod.string().min(6),
+});
+const updateSchema = zod.object({
+  password: zod.string().min(6).optional(),
+  firstName: zod.string().min(3).max(50).optional(),
+  lastName: zod.string().min(3).max(50).optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+  message: "At least one field must be provided",
 });
 
 router.post("/signup", async (req, res) => {
@@ -81,6 +90,22 @@ router.post("/signin", async(req, res) => {
     message: "User logged in successfully",
     token: token
   });
+});
+
+router.put("/update", authMiddleware, async (req, res) => {
+  const inputVerified = updateSchema.safeParse(req.body);
+  if (!inputVerified.success) {
+    return res.status(400).json({ message: inputVerified.error.errors[0].message });
+  }
+
+  const updates = { ...inputVerified.data };
+  if (updates.password) {
+    updates.password = await bcrypt.hash(updates.password, 10);
+  }
+
+  await User.updateOne({ _id: req.userId }, updates);
+
+  res.json({ message: "User updated successfully" });
 });
 
 module.exports = router;
