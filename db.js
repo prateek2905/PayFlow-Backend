@@ -45,10 +45,54 @@ const accountSchema = new mongoose.Schema({
   },
 });
 
+const tagSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+});
+
+const transactionSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  type: {
+    type: String,
+    enum: ["credit", "debit"],
+    required: true,
+  },
+  tag: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tag",
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  value: {
+    type: Number,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const Account = mongoose.model("Account", accountSchema);
 const User = mongoose.model("User", userSchema);
+const Tag = mongoose.model("Tag", tagSchema);
+const Transaction = mongoose.model("Transaction", transactionSchema);
 
 module.exports = {
   User,
   Account,
+  Tag,
+  Transaction,
 };
