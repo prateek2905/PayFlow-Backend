@@ -23,6 +23,7 @@ const updateSchema = zod.object({
   password: zod.string().min(6).optional(),
   firstName: zod.string().min(3).max(50).optional(),
   lastName: zod.string().min(3).max(50).optional(),
+  monthlyIncome: zod.number().min(0).optional(),
 }).refine((data) => Object.keys(data).length > 0, {
   message: "At least one field must be provided",
 });
@@ -94,9 +95,9 @@ router.post("/signin", async(req, res) => {
 });
 
 router.get("/me", authMiddleware, async (req, res) => {
-    const user = await User.findById(req.userId).select("firstName lastName username");
+    const user = await User.findById(req.userId).select("firstName lastName username monthlyIncome");
     if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ firstName: user.firstName, lastName: user.lastName, username: user.username });
+    res.json({ firstName: user.firstName, lastName: user.lastName, username: user.username, monthlyIncome: user.monthlyIncome || 0 });
 });
 
 router.put("/update", authMiddleware, async (req, res) => {

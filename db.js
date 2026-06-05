@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
     trim: true,
     maxLength: 50,
   },
+  monthlyIncome: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const accountSchema = new mongoose.Schema({
@@ -85,14 +89,35 @@ const transactionSchema = new mongoose.Schema({
   },
 });
 
+const budgetSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  tag: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tag",
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+});
+budgetSchema.index({ userId: 1, tag: 1 }, { unique: true });
+
 const Account = mongoose.model("Account", accountSchema);
 const User = mongoose.model("User", userSchema);
 const Tag = mongoose.model("Tag", tagSchema);
 const Transaction = mongoose.model("Transaction", transactionSchema);
+const Budget = mongoose.model("Budget", budgetSchema);
 
 module.exports = {
   User,
   Account,
   Tag,
   Transaction,
+  Budget,
 };
